@@ -49,20 +49,42 @@ subtest 'normal disptch' => sub {
             },
             client => sub {
                 my $cb = shift;
-                my @params = ( 1, 2, 3, 4, 5 );
+
+                my ($req, $res, $json);
                 my $uri = URI->new( "http://localhost" );
+
+                # no such method...
+                $uri->query_form(
+                    method => 'not_found'
+                );
+                $req = HTTP::Request->new( GET => $uri );
+                $res = $cb->( $req );
+                if (! ok $res->is_success, "response is success") {
+                    diag $res->as_string;
+                }
+
+                $json = $coder->decode( $res->decoded_content );
+                if ( ! ok $json->{error}, "I should have gotten an error" ) {
+                    diag explain $json;
+                }
+
+                if (! is $json->{error}->{code}, JSON::RPC::Constants::RPC_METHOD_NOT_FOUND(), "code is RPC_METHOD_NOT_FOUND" ) {
+                    diag explain $json;
+                }
+
+                my @params = ( 1, 2, 3, 4, 5 );
                 $uri->query_form(
                     method => 'sum',
                     params => $coder->encode(\@params)
                 );
 
-                my $req = HTTP::Request->new( GET => $uri );
-                my $res = $cb->( $req );
+                $req = HTTP::Request->new( GET => $uri );
+                $res = $cb->( $req );
                 if (! ok $res->is_success, "response is success") {
                     diag $res->as_string;
                 }
 
-                my $json = $coder->decode( $res->decoded_content );
+                $json = $coder->decode( $res->decoded_content );
                 if (! ok ! $json->{error}, "no errors") {
                     diag explain $json;
                 }
