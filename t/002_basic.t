@@ -6,6 +6,21 @@ use JSON;
 use_ok "JSON::RPC::Dispatcher";
 use_ok "t::JSON::RPC::Test::Handler::Sum";
 
+subtest 'defaults' => sub {
+    my $dispatcher = JSON::RPC::Dispatcher->new();
+    if (ok $dispatcher->coder) {
+        isa_ok $dispatcher->coder, 'JSON';
+    }
+
+    if (ok $dispatcher->router) {
+        isa_ok $dispatcher->router, "Router::Simple";
+    }
+
+    if (ok $dispatcher->parser) {
+        isa_ok $dispatcher->parser, "JSON::RPC::Parser";
+    }
+};
+
 subtest 'normal disptch' => sub {
     my $coder = JSON->new;
     my $router = Router::Simple->new;
@@ -17,52 +32,79 @@ subtest 'normal disptch' => sub {
         handler => 'Sum',
         action => 'sum',
     } );
-    my $dispatcher_by_class = JSON::RPC::Dispatcher->new(
+
+    $router->connect( 'sum_obj' => {
+        handler => t::JSON::RPC::Test::Handler::Sum->new,
+        action => 'sum',
+    } );
+
+    my $dispatcher = JSON::RPC::Dispatcher->new(
+        coder  => $coder,
+        parser => JSON::RPC::Parser->new( coder => $coder ),
         prefix => 't::JSON::RPC::Test::Handler',
         router => $router,
     );
-    ok $dispatcher_by_class, "dispatcher by class is ok";
+    ok $dispatcher, "dispatcher ok";
 
-    my $dispatcher_by_obj = JSON::RPC::Dispatcher->new(
-        handler => t::JSON::RPC::Test::Handler::Sum->new,
-        router => $router,
-    );
-    ok $dispatcher_by_obj, "dispatcher by obj is ok";
 
-    foreach my $dispatcher ( ( $dispatcher_by_class, $dispatcher_by_obj ) ){
+    for my $raw_env ( 0..1 ) {
         test_psgi
             app => sub {
                 my $env = shift;
-                my $res = $dispatcher->dispatch_rpc(
-                    Plack::Request->new($env)
-                );
+                my $req = $raw_env ? $env : Plack::Request->new($env);
+                my $res = $dispatcher->dispatch_rpc( $req );
                 return $res->finalize();
             },
             client => sub {
                 my $cb = shift;
-                my @params = ( 1, 2, 3, 4, 5 );
-                my $uri = URI->new( "http://localhost" );
-                $uri->query_form(
-                    method => 'sum',
-                    params => $coder->encode(\@params)
-                );
 
-                my $req = HTTP::Request->new( GET => $uri );
-                my $res = $cb->( $req );
+                my ($req, $res, $json);
+                my $uri = URI->new( "http://localhost" );
+
+                # no such method...
+                $uri->query_form(
+                    method => 'not_found'
+                );
+                $req = HTTP::Request->new( GET => $uri );
+                $res = $cb->( $req );
                 if (! ok $res->is_success, "response is success") {
                     diag $res->as_string;
                 }
 
-                my $json = $coder->decode( $res->decoded_content );
-                if (! ok ! $json->{error}, "no errors") {
+                $json = $coder->decode( $res->decoded_content );
+                if ( ! ok $json->{error}, "I should have gotten an error" ) {
                     diag explain $json;
                 }
-                
-                my $sum = 0;
-                foreach my $p (@params) {
-                    $sum += $p;
+
+                if (! is $json->{error}->{code}, JSON::RPC::Constants::RPC_METHOD_NOT_FOUND(), "code is RPC_METHOD_NOT_FOUND" ) {
+                    diag explain $json;
                 }
-                is $json->{result}, $sum, "sum matches";
+
+                my @params = ( 1, 2, 3, 4, 5 );
+
+                foreach my $method ( qw(sum sum_obj) ){
+                    $uri->query_form(
+                        method => $method,
+                        params => $coder->encode(\@params)
+                    );
+
+                    $req = HTTP::Request->new( GET => $uri );
+                    $res = $cb->( $req );
+                    if (! ok $res->is_success, "response is success") {
+                        diag $res->as_string;
+                    }
+                    
+                    $json = $coder->decode( $res->decoded_content );
+                    if (! ok ! $json->{error}, "no errors") {
+                        diag explain $json;
+                    }
+                    
+                    my $sum = 0;
+                    foreach my $p (@params) {
+                        $sum += $p;
+                    }
+                    is $json->{result}, $sum, "sum matches";
+                }
 
                 my $id = time();
                 $uri->query_form(
@@ -76,7 +118,7 @@ subtest 'normal disptch' => sub {
                 if (! ok $res->is_success, "response is success") {
                     diag $res->as_string;
                 }
-                
+
                 $json = $coder->decode( $res->decoded_content );
                 is $json->{jsonrpc}, '2.0';
                 is $json->{id}, $id;

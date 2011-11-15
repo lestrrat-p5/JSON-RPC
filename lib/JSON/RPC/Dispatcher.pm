@@ -64,14 +64,11 @@ sub construct_handler {
 sub get_handler {
     my ($self, $klass) = @_;
 
-    if ( $self->handler ){
-        if (! $self->handler->isa( 'JSON::RPC::Handler' ) ) {
-            Carp::croak( "handler does not JSON::RPC::Handler object" );
-        }
+    if ( Scalar::Util::blessed( $klass )){
         if (JSONRPC_DEBUG > 1) {
-            warn $self->handler;
+            warn "Handler is already object : $klass";
         }
-        return $self->handler;
+        return $klass;
     }
 
     if ($klass !~ s/^\+//) {
