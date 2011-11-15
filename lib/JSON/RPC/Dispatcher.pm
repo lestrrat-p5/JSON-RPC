@@ -5,8 +5,8 @@ use JSON::RPC::Parser;
 use JSON::RPC::Procedure;
 use Class::Load ();
 use Router::Simple;
+use Scalar::Util;
 use Try::Tiny;
-use JSON;
 
 use Class::Accessor::Lite
     rw => [ qw(
@@ -32,6 +32,7 @@ sub new {
         $self->{parser} = JSON::RPC::Parser->new( coder => $self->coder )
     }
     if (! $self->{router}) {
+        require Router::Simple;
         $self->{router} = Router::Simple->new;
     }
     return $self;
@@ -75,6 +76,11 @@ sub get_handler {
 
 sub dispatch_rpc {
     my ($self, $req, @args) = @_;
+
+    if ( ! Scalar::Util::blessed($req) ) {
+        require Plack::Request;
+        $req = Plack::Request->new($req);
+    }
 
     my @response;
     my $procedures;
@@ -150,21 +156,23 @@ sub dispatch_rpc {
 
         my $action = $matched->{action};
         try {
+            my ($ip, $ua);
             if (JSONRPC_DEBUG > 1) {
                 warn "Procedure '$procedure->{method}' maps to action $action";
+                my $ip = $req->address || 'N/A';
+                my $ua = $req->user_agent || 'N/A';
             }
-
-            my $ip = $req->address;
-            my $ua = $req->user_agent;
             my $params = $procedure->params;
             my $handler = $self->get_handler( $matched->{handler} );
             my $result = $handler->execute( $action, $procedure, @args );
-            warn "[INFO] action=$action "
-                . "params=["
-                . (ref $params ? encode_json($params) : $params)
-                . "] ret="
-                . (ref $result ? encode_json($result) : $result)
-                . " IP=$ip UA=$ua";
+            if (JSONRPC_DEBUG) {
+                warn "[INFO] action=$action "
+                    . "params=["
+                    . (ref $params ? $self->{coder}->encode($params) : $params)
+                    . "] ret="
+                    . (ref $result ? $self->{coder}->encode($result) : $result)
+                    . " IP=$ip UA=$ua";
+            }
 
             push @response, {
                 jsonrpc => '2.0',
