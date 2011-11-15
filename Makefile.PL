@@ -1,7 +1,7 @@
 use inc::Module::Install;
 
-name 'JSONRPC';
-all_from 'lib/JSONRPC.pm';
+name 'JSON-RPC';
+all_from 'lib/JSON/RPC.pm';
 
 requires 'parent';
 requires 'CGI';
