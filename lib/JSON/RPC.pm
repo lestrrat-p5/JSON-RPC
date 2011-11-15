@@ -8,51 +8,82 @@ __END__
 
 =head1 NAME
 
-JSON::RPC
+JSON::RPC - JSON RPC 2.0 Server Implementation
 
 =head1 SYNOPSIS
 
-    # rpc.pl
+    # app.psgi
     use strict;
-    use Router::Simple::Declre;
-    router {
-        connect "method1" => {
-            handler => "HandlerClass",
-            action  => "method_name"
-        }
+    use JSON::RPC::Dispatcher;
+
+    my $dispatcher = JSON::RPC::Dispatcher->new(
+        prefix => "MyApp::JSONRPC::Handler",
+        router => Router::Simple->new( ... )
+    );
+
+    sub {
+        my $env = shift;
+        $dispatcher->handle_psgi($env);
     };
 
-    my $dispatcher = JSONRPC::Dispatcher->new(
-        prefix => "MyApp::JSONRPC::Handler",
-        router => do "rpc.pl", # or Router::Simple instance
-    );
+=head1 DESCRIPTION
 
-    # Suppose you get a request for method = "method1"
-    # This below dispatches to 
-    #    MyApp::JSONRPC::Handler::HandlerClass->method_name( \%params, $procedure, @extra_args )
-    my $res = $dispatcher->dispatch_rpc(
-        $request, # object like Plack::Request
-        @extra_parameters
-    );
+JSON::RPC is a set of modules that implment JSON RPC 2.0 protocol.
 
-    # $res depends on your application
+=head1 BASIC USAGE
 
-=head1 IN YOUR WEBAPP
+The dispatcher is responsible for marshalling the request.
 
-    # In your controller:
-    package MyController;
+The routing between the JSON RPC methods and their implementors are handled by
+Router::Simple. For example, if you want to map method "foo" to a "MyApp::JSONRPC::Handler" object instance's "handle_foo" method, you specify something like the following in your router instance:
 
-    sub dispatch {
-        my ($self, $c) = @_;
-        my $res = $c->get('JSONRPC::Dispatcher')->dispatch_rpc( $c->request, $c );
+    use Router::Simple::Declare;
+    my $router = router {
+        connect "foo" => {
+            handler => "+MyApp::JSONRPC::Handler",
+            action  => "handle_foo"
+        };
+    };
 
-        # if this is pickles, you need to copy the values yourself
-        my $pres = $c->response;
-        foreach my $field ( qw(status headers boyd) ) {
-            $pres->$field( $res->$field );
-        }
-        # avoid rendering the view
-        $c->finished(1);
+The "+" prefix in the handler classname denotes that it is already a fully qualified classname. Without the prefix, the value of "prefix" in the dispatcher object will be used to qualify the classname.
+
+The implementors are called handlers. Handlers are simple objects, and will be instantiated automatically for you. Their return values are converted to JSON objects automatically.
+
+You may also choose to pass objects in the handler argument to connect in  your router. This will save you the cost of instantiating the handler object, and you also don't have to rely on us instantiating your handler object.
+
+    use Router::Simple::Declare;
+    use MyApp::JSONRPC::Handler;
+
+    my $handler = MyApp::JSONRPC::HAndler->new;
+    my $router = router {
+        connect "foo" => {
+            handler => $handler,
+            action  => "handle_foo"
+        };
+    };
+
+=head1 EMBED IT IN YOUR WEBAPP
+
+If you already have a web app (and whatever framework you might already have), you may choose to embed JSON::RPC in your webapp instead of directly calling it in your PSGI application.
+
+For example, if you would like to your webapp's "rpc" handler to marshall the JSON RPC request, you can do something like the following:
+
+    package MyApp;
+    use My::Favorite::WebApp;
+
+    sub rpc {
+        my ($self, $context) = @_;
+
+        my $dispatcher =  ...; # grab it from somewhere
+        $dispatcher->handle_psgi( $context->env );
     }
+
+=head1 AUTHORS
+
+Daisuke Maki
+
+Shinichiro Aska
+
+Yoshimitsu Torii
 
 =cut
