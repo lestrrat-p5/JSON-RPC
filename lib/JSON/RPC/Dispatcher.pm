@@ -6,7 +6,7 @@ use JSON::RPC::Procedure;
 use Class::Load ();
 use Router::Simple;
 use Try::Tiny;
-use JSON::XS;
+use JSON;
 
 use Class::Accessor::Lite
     rw => [ qw(
