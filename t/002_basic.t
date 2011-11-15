@@ -1,6 +1,9 @@
 use strict;
 use Test::More;
 use Plack::Test;
+use LWP::UserAgent;
+use HTTP::Request;
+use HTTP::Request::Common qw(POST);
 use JSON;
 
 use_ok "JSON::RPC::Dispatcher";
@@ -47,7 +50,160 @@ subtest 'normal disptch' => sub {
     ok $dispatcher, "dispatcher ok";
 
 
-    for my $raw_env ( 0..1 ) {
+    my $request_get = sub {
+        my $cb = shift;
+
+        my ($req, $res, $json);
+        my $uri = URI->new( "http://localhost" );
+
+        # no such method...
+        $uri->query_form(
+            method => 'not_found'
+        );
+        $req = HTTP::Request->new( GET => $uri );
+        $res = $cb->( $req );
+        if (! ok $res->is_success, "response is success") {
+            diag $res->as_string;
+        }
+
+        $json = $coder->decode( $res->decoded_content );
+        if ( ! ok $json->{error}, "I should have gotten an error" ) {
+            diag explain $json;
+        }
+
+        if (! is $json->{error}->{code}, JSON::RPC::Constants::RPC_METHOD_NOT_FOUND(), "code is RPC_METHOD_NOT_FOUND" ) {
+            diag explain $json;
+        }
+
+
+        my @params = ( 1, 2, 3, 4, 5 );
+        foreach my $method ( qw(sum sum_obj) ){
+            $uri->query_form(
+                method => $method,
+                params => $coder->encode(\@params)
+            );
+
+            $req = HTTP::Request->new( GET => $uri );
+            $res = $cb->( $req );
+            if (! ok $res->is_success, "response is success") {
+                diag $res->as_string;
+            }
+
+            $json = $coder->decode( $res->decoded_content );
+            if (! ok ! $json->{error}, "no errors") {
+                diag explain $json;
+            }
+
+            my $sum = 0;
+            foreach my $p (@params) {
+                $sum += $p;
+            }
+            is $json->{result}, $sum, "sum matches";
+        }
+
+
+        my $id = time();
+        $uri->query_form(
+            jsonrpc => '2.0',
+            id     => $id,
+            method => 'blowup',
+            params => "fuga",
+        );
+        $req = HTTP::Request->new( GET => $uri );
+        $res = $cb->( $req );
+
+        if (! ok $res->is_success, "response is success") {
+            diag $res->as_string;
+        }
+
+        $json = $coder->decode( $res->decoded_content );
+        is $json->{jsonrpc}, '2.0';
+        is $json->{id}, $id;
+        ok $json->{error};
+    };
+
+
+    my $request_post = sub {
+        my $cb = shift;
+
+        my ($req, $res, $post_content, $json);
+
+        my $headers = HTTP::Headers->new( Content_Type => 'application/json',);
+        my $uri = URI->new( "http://localhost" );
+
+        $post_content = $coder->encode( { method => 'not_found' } );
+
+        # no such method...
+        $req = HTTP::Request->new( POST => $uri, $headers, $post_content);
+        $res = $cb->($req);
+
+        if (! ok $res->is_success, "response is success") {
+            diag $res->as_string;
+        }
+
+        $json = $coder->decode( $res->decoded_content );
+        if ( ! ok $json->{error}, "I should have gotten an error" ) {
+            diag explain $json;
+        }
+
+        if (! is $json->{error}->{code}, JSON::RPC::Constants::RPC_METHOD_NOT_FOUND(), "code is RPC_METHOD_NOT_FOUND" ) {
+            diag explain $json;
+        }
+
+
+        my @params = ( 1, 2, 3, 4, 5 );
+        foreach my $method ( qw(sum sum_obj) ){
+            $post_content = $coder->encode(
+                {
+                    method => $method,
+                    params => \@params,
+                },
+            );
+
+            $req = HTTP::Request->new( POST => $uri, $headers, $post_content );
+            $res = $cb->( $req );
+            if (! ok $res->is_success, "response is success") {
+                diag $res->as_string;
+            }
+
+            $json = $coder->decode( $res->decoded_content );
+            if (! ok ! $json->{error}, "no errors") {
+                diag explain $json;
+            }
+
+            my $sum = 0;
+            foreach my $p (@params) {
+                $sum += $p;
+            }
+            is $json->{result}, $sum, "sum matches";
+        }
+
+
+        my $id = time();
+        $post_content = $coder->encode(
+            {
+                jsonrpc => '2.0',
+                id     => $id,
+                method => 'blowup',
+                params => "fuga",
+            },
+        );
+        $req = HTTP::Request->new( POST => $uri, $headers, $post_content );
+        $res = $cb->( $req );
+
+        if (! ok $res->is_success, "response is success") {
+            diag $res->as_string;
+        }
+
+        $json = $coder->decode( $res->decoded_content );
+        is $json->{jsonrpc}, '2.0';
+        is $json->{id}, $id;
+        ok $json->{error};
+
+    };
+
+
+    for my $raw_env ( 0..0 ) {
         test_psgi
             app => sub {
                 my $env = shift;
@@ -57,72 +213,8 @@ subtest 'normal disptch' => sub {
             },
             client => sub {
                 my $cb = shift;
-
-                my ($req, $res, $json);
-                my $uri = URI->new( "http://localhost" );
-
-                # no such method...
-                $uri->query_form(
-                    method => 'not_found'
-                );
-                $req = HTTP::Request->new( GET => $uri );
-                $res = $cb->( $req );
-                if (! ok $res->is_success, "response is success") {
-                    diag $res->as_string;
-                }
-
-                $json = $coder->decode( $res->decoded_content );
-                if ( ! ok $json->{error}, "I should have gotten an error" ) {
-                    diag explain $json;
-                }
-
-                if (! is $json->{error}->{code}, JSON::RPC::Constants::RPC_METHOD_NOT_FOUND(), "code is RPC_METHOD_NOT_FOUND" ) {
-                    diag explain $json;
-                }
-
-                my @params = ( 1, 2, 3, 4, 5 );
-
-                foreach my $method ( qw(sum sum_obj) ){
-                    $uri->query_form(
-                        method => $method,
-                        params => $coder->encode(\@params)
-                    );
-
-                    $req = HTTP::Request->new( GET => $uri );
-                    $res = $cb->( $req );
-                    if (! ok $res->is_success, "response is success") {
-                        diag $res->as_string;
-                    }
-                    
-                    $json = $coder->decode( $res->decoded_content );
-                    if (! ok ! $json->{error}, "no errors") {
-                        diag explain $json;
-                    }
-                    
-                    my $sum = 0;
-                    foreach my $p (@params) {
-                        $sum += $p;
-                    }
-                    is $json->{result}, $sum, "sum matches";
-                }
-
-                my $id = time();
-                $uri->query_form(
-                    jsonrpc => '2.0',
-                    id     => $id,
-                    method => 'blowup',
-                    params => "fuga",
-                );
-                $req = HTTP::Request->new( GET => $uri  );
-                $res = $cb->( $req );
-                if (! ok $res->is_success, "response is success") {
-                    diag $res->as_string;
-                }
-
-                $json = $coder->decode( $res->decoded_content );
-                is $json->{jsonrpc}, '2.0';
-                is $json->{id}, $id;
-                ok $json->{error};
+                $request_get->($cb);
+                $request_post->($cb);
             }
         ;
     }
