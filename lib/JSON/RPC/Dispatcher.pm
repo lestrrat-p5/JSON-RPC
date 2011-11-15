@@ -11,6 +11,7 @@ use Try::Tiny;
 use Class::Accessor::Lite
     rw => [ qw(
         coder
+        handler
         handlers
         parser
         prefix
@@ -62,6 +63,16 @@ sub construct_handler {
 
 sub get_handler {
     my ($self, $klass) = @_;
+
+    if ( $self->handler ){
+        if (! $self->handler->isa( 'JSON::RPC::Handler' ) ) {
+            Carp::croak( "handler does not JSON::RPC::Handler object" );
+        }
+        if (JSONRPC_DEBUG > 1) {
+            warn $self->handler;
+        }
+        return $self->handler;
+    }
 
     if ($klass !~ s/^\+//) {
         $klass = $self->guess_handler_class( $klass );
