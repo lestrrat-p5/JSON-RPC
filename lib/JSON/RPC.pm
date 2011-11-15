@@ -78,6 +78,12 @@ For example, if you would like to your webapp's "rpc" handler to marshall the JS
         $dispatcher->handle_psgi( $context->env );
     }
 
+=head1 BACKWARDS COMPATIBILITY
+
+Eh, not compatible at all. JSON RPC 0.xx was fine, but it predates PSGI, and things are just... different before and after PSGI.
+
+Code at version 0.96 has been moved to JSON::RPC::Legacy namespace, so change your application to use JSON::RPC::Legacy if you were using the old version.
+
 =head1 AUTHORS
 
 Daisuke Maki
@@ -85,5 +91,9 @@ Daisuke Maki
 Shinichiro Aska
 
 Yoshimitsu Torii
+
+=head1 AUTHOR EMERITUS
+
+Makamaka Hannyaharamitu, E<lt>makamaka[at]cpan.orgE<gt> - JSON::RPC modules up to 0.96
 
 =cut
