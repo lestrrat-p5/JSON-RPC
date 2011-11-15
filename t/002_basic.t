@@ -1,9 +1,7 @@
 use strict;
 use Test::More;
 use Plack::Test;
-use LWP::UserAgent;
 use HTTP::Request;
-use HTTP::Request::Common qw(POST);
 use JSON;
 
 use_ok "JSON::RPC::Dispatcher";
