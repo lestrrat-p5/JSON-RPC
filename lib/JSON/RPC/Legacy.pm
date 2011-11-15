@@ -1,8 +1,8 @@
-package Legacy::JSON::RPC;
+package JSON::RPC::Legacy;
 
 use strict;
 
-$Legacy::JSON::RPC::VERSION = '0.96';
+$JSON::RPC::Legacy::VERSION = '0.96';
 
 
 1;

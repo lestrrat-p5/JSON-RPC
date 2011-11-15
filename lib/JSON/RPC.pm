@@ -1,4 +1,4 @@
-package JSONRPC;
+package JSON::RPC;
 use strict;
 our $VERSION = '0.04';
 
@@ -8,7 +8,7 @@ __END__
 
 =head1 NAME
 
-JSONRPC
+JSON::RPC
 
 =head1 SYNOPSIS
 
