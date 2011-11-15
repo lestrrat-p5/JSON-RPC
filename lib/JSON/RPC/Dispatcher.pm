@@ -159,8 +159,8 @@ sub dispatch_rpc {
             my ($ip, $ua);
             if (JSONRPC_DEBUG > 1) {
                 warn "Procedure '$procedure->{method}' maps to action $action";
-                my $ip = $req->address || 'N/A';
-                my $ua = $req->user_agent || 'N/A';
+                $ip = $req->address || 'N/A';
+                $ua = $req->user_agent || 'N/A';
             }
             my $params = $procedure->params;
             my $handler = $self->get_handler( $matched->{handler} );
