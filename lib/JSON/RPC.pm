@@ -54,7 +54,7 @@ You may also choose to pass objects in the handler argument to connect in  your 
     use Router::Simple::Declare;
     use MyApp::JSONRPC::Handler;
 
-    my $handler = MyApp::JSONRPC::HAndler->new;
+    my $handler = MyApp::JSONRPC::Handler->new;
     my $router = router {
         connect "foo" => {
             handler => $handler,
