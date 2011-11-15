@@ -2,9 +2,6 @@ package JSON::RPC::Legacy;
 
 use strict;
 
-$JSON::RPC::Legacy::VERSION = '0.96';
-
-
 1;
 __END__
 
