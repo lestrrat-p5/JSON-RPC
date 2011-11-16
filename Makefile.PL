@@ -62,4 +62,6 @@ test_requires 'Test::More';
 test_requires 'Plack::Test';
 test_requires 'Plack::Request';
 
+auto_set_repository;
+
 WriteAll;
