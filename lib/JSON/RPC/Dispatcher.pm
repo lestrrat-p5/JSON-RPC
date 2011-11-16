@@ -114,7 +114,7 @@ sub dispatch_rpc {
                     message => "Invalid parameters",
                 }
             };
-        } elsif ( $e =~ /Parse error/ ) {
+        } elsif ( $e =~ /parse error/ ) {
             push @response, {
                 error => {
                     code => RPC_PARSE_ERROR,

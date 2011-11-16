@@ -6,6 +6,9 @@ use JSON;
 
 use_ok "JSON::RPC::Dispatcher";
 use_ok "t::JSON::RPC::Test::Handler::Sum";
+use_ok "JSON::RPC::Constants";
+use JSON::RPC::Constants qw(:all);
+
 
 subtest 'defaults' => sub {
     my $dispatcher = JSON::RPC::Dispatcher->new();
@@ -213,6 +216,35 @@ subtest 'normal disptch' => sub {
                 my $cb = shift;
                 subtest 'JSONRPC via GET' => sub { $request_get->($cb) };
                 subtest 'JSONRPC via POST' => sub { $request_post->($cb) };
+                subtest 'JSONRPC Error' => sub { 
+                    my ($post_content, $req, $res, $json);
+                    my $headers = HTTP::Headers->new( Content_Type => 'application/json',);
+                    my $uri = URI->new( "http://localhost" );
+
+                    $post_content = $coder->encode( [ method => "hoge"] );
+                    $req = HTTP::Request->new( POST => $uri, $headers, $post_content );
+                    $res = $cb->($req);
+                    $json = $coder->decode( $res->decoded_content );
+                    if (! is $json->{error}->{code}, RPC_INVALID_PARAMS ){
+                        diag explain $json;
+                    }
+
+                    $post_content = "{ [[ bloken json }";
+                    $req = HTTP::Request->new( POST => $uri, $headers, $post_content );
+                    $res = $cb->($req);
+                    $json = $coder->decode( $res->decoded_content );
+                    if (! is $json->{error}->{code}, RPC_PARSE_ERROR ) {
+                        diag explain $json;
+                    }
+
+                    $post_content = "[]";
+                    $req = HTTP::Request->new( POST => $uri, $headers, $post_content );
+                    $res = $cb->($req);
+                    $json = $coder->decode( $res->decoded_content );
+                    if (! is $json->{error}->{code}, RPC_INVALID_REQUEST ){
+                        diag explain $json;
+                    }
+                };
             }
         ;
     }
