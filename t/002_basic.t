@@ -211,8 +211,8 @@ subtest 'normal disptch' => sub {
             },
             client => sub {
                 my $cb = shift;
-                $request_get->($cb);
-                $request_post->($cb);
+                subtest 'JSONRPC via GET' => sub { $request_get->($cb) };
+                subtest 'JSONRPC via POST' => sub { $request_post->($cb) };
             }
         ;
     }
