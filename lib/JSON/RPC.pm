@@ -30,6 +30,10 @@ JSON::RPC - JSON RPC 2.0 Server Implementation
 
 JSON::RPC is a set of modules that implment JSON RPC 2.0 protocol.
 
+    If you are using old JSON::RPC code (up to 0.96), DO NOT EXPECT
+    YOUR CODE TO WORK WITH THIS VERSION. THIS VERSION IS 
+    ****BACKWARDS INCOMPATIBLE****
+
 =head1 BASIC USAGE
 
 The dispatcher is responsible for marshalling the request.
