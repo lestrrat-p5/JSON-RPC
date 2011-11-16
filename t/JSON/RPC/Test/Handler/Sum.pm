@@ -1,6 +1,6 @@
 package t::JSON::RPC::Test::Handler::Sum;
 use strict;
-use parent qw(JSON::RPC::Handler);
+use Class::Accessor::Lite new => 1;
 
 sub blowup {
     die "I blew up!";

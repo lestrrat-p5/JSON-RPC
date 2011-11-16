@@ -52,9 +52,6 @@ sub construct_handler {
     if (! $handler) {
         Class::Load::load_class( $klass );
         $handler = $klass->new();
-        if (! $handler->isa( 'JSON::RPC::Handler' ) ) {
-            Carp::croak( "$klass does not implement JSON::RPC::Handler" );
-        }
         $self->handlers->{$klass} = $handler;
     }
     return $handler;
@@ -172,7 +169,15 @@ sub handle_psgi {
             }
             my $params = $procedure->params;
             my $handler = $self->get_handler( $matched->{handler} );
-            my $result = $handler->execute( $action, $procedure, @args );
+
+            my $code = $handler->can( $action );
+            if (! $code) {
+                if ( JSONRPC_DEBUG ) {
+                    warn "[INFO] handler $handler does not implement method $action!.";
+                }
+                die "Internal Error";
+            }
+            my $result = $code->( $handler, $procedure->params, $procedure, @args );
             if (JSONRPC_DEBUG) {
                 warn "[INFO] action=$action "
                     . "params=["

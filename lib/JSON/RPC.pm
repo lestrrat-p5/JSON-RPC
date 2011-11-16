@@ -91,8 +91,9 @@ You may also choose to pass objects in the handler argument to connect in  your 
         };
     };
 
-Your handlers are responsible for returning some sort of reference structure
-that can be properly encoded via JSON/JSON::XS.
+=head1 HANDLERS
+
+Your handlers are objects responsible for returning some sort of reference structure that can be properly encoded via JSON/JSON::XS. The handler only needs to implement the methods that you specified in your router.
 
 The handler methods will receive the following parameters:
 
