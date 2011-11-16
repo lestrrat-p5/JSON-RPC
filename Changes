@@ -1,7 +1,7 @@
 Changes
 =======
 
-1.00  2011 Nov XX
+1.00_01  2011 Nov 16
     - New maintainer, completely new code for PSGI apps and JSON RPC 2.0
     - If you are using old JSON::RPC code (up to 0.96), DO NOT EXPECT
       YOUR CODE TO WORK. THIS VERSION IS BACKWARDS INCOMPATIBLE
