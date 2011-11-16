@@ -229,7 +229,7 @@ subtest 'normal disptch' => sub {
                         diag explain $json;
                     }
 
-                    $post_content = "{ [[ bloken json }";
+                    $post_content = "{ [[ broken json }";
                     $req = HTTP::Request->new( POST => $uri, $headers, $post_content );
                     $res = $cb->($req);
                     $json = $coder->decode( $res->decoded_content );
@@ -244,6 +244,15 @@ subtest 'normal disptch' => sub {
                     if (! is $json->{error}->{code}, RPC_INVALID_REQUEST ){
                         diag explain $json;
                     }
+
+                    # invalid method 'PUT'
+                    $req = HTTP::Request->new( PUT => $uri );
+                    $res = $cb->($req);
+                    $json = $coder->decode( $res->decoded_content );
+                    if (! is $json->{error}->{code}, RPC_INVALID_REQUEST ){
+                        diag explain $json;
+                    }
+
                 };
             }
         ;
