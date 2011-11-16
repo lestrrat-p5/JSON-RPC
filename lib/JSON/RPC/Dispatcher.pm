@@ -11,7 +11,6 @@ use Try::Tiny;
 use Class::Accessor::Lite
     rw => [ qw(
         coder
-        handler
         handlers
         parser
         prefix
