@@ -209,7 +209,7 @@ subtest 'normal disptch' => sub {
             app => sub {
                 my $env = shift;
                 my $req = $raw_env ? $env : Plack::Request->new($env);
-                my $res = $dispatcher->dispatch_rpc( $req );
+                my $res = $dispatcher->handle_psgi( $req );
                 return $res->finalize();
             },
             client => sub {

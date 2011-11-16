@@ -81,10 +81,11 @@ sub get_handler {
     return $handler;
 }
 
-sub dispatch_rpc {
+sub handle_psgi {
     my ($self, $req, @args) = @_;
 
     if ( ! Scalar::Util::blessed($req) ) {
+        # assume it's a PSGI hash
         require Plack::Request;
         $req = Plack::Request->new($req);
     }
