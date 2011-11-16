@@ -4,24 +4,24 @@ use Plack::Test;
 use HTTP::Request;
 use JSON;
 
-use_ok "JSON::RPC::Dispatcher";
-use_ok "t::JSON::RPC::Test::Handler::Sum";
-use_ok "JSON::RPC::Constants";
-use JSON::RPC::Constants qw(:all);
-
+BEGIN {
+    use_ok "JSON::RPC::Dispatch";
+    use_ok "JSON::RPC::Constants", ':all';
+    use_ok "t::JSON::RPC::Test::Handler::Sum";
+}
 
 subtest 'defaults' => sub {
-    my $dispatcher = JSON::RPC::Dispatcher->new();
-    if (ok $dispatcher->coder) {
-        isa_ok $dispatcher->coder, 'JSON';
+    my $dispatch = JSON::RPC::Dispatch->new();
+    if (ok $dispatch->coder) {
+        isa_ok $dispatch->coder, 'JSON';
     }
 
-    if (ok $dispatcher->router) {
-        isa_ok $dispatcher->router, "Router::Simple";
+    if (ok $dispatch->router) {
+        isa_ok $dispatch->router, "Router::Simple";
     }
 
-    if (ok $dispatcher->parser) {
-        isa_ok $dispatcher->parser, "JSON::RPC::Parser";
+    if (ok $dispatch->parser) {
+        isa_ok $dispatch->parser, "JSON::RPC::Parser";
     }
 };
 
@@ -42,13 +42,13 @@ subtest 'normal disptch' => sub {
         action => 'sum',
     } );
 
-    my $dispatcher = JSON::RPC::Dispatcher->new(
+    my $dispatch = JSON::RPC::Dispatch->new(
         coder  => $coder,
         parser => JSON::RPC::Parser->new( coder => $coder ),
         prefix => 't::JSON::RPC::Test::Handler',
         router => $router,
     );
-    ok $dispatcher, "dispatcher ok";
+    ok $dispatch, "dispatch ok";
 
 
     my $request_get = sub {
@@ -209,7 +209,7 @@ subtest 'normal disptch' => sub {
             app => sub {
                 my $env = shift;
                 my $req = $raw_env ? $env : Plack::Request->new($env);
-                my $res = $dispatcher->handle_psgi( $req );
+                my $res = $dispatch->handle_psgi( $req );
                 return $res->finalize();
             },
             client => sub {

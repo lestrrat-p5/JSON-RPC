@@ -3,7 +3,7 @@ use Test::More;
 
 use_ok $_ for qw(
     JSON::RPC::Constants
-    JSON::RPC::Dispatcher
+    JSON::RPC::Dispatch
     JSON::RPC::Parser
     JSON::RPC::Procedure
 );

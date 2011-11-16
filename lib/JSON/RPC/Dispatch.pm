@@ -1,4 +1,4 @@
-package JSON::RPC::Dispatcher;
+package JSON::RPC::Dispatch;
 use strict;
 use JSON::RPC::Constants qw(:all);
 use JSON::RPC::Parser;

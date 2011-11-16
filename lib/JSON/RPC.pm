@@ -14,16 +14,16 @@ JSON::RPC - JSON RPC 2.0 Server Implementation
 
     # app.psgi
     use strict;
-    use JSON::RPC::Dispatcher;
+    use JSON::RPC::Dispatch;
 
-    my $dispatcher = JSON::RPC::Dispatcher->new(
+    my $dispatch = JSON::RPC::Dispatch->new(
         prefix => "MyApp::JSONRPC::Handler",
         router => Router::Simple->new( ... )
     );
 
     sub {
         my $env = shift;
-        $dispatcher->handle_psgi($env);
+        $dispatch->handle_psgi($env);
     };
 
 =head1 DESCRIPTION
@@ -36,7 +36,7 @@ JSON::RPC is a set of modules that implment JSON RPC 2.0 protocol.
 
 =head1 BASIC USAGE
 
-The dispatcher is responsible for marshalling the request.
+The dispatch is responsible for marshalling the request.
 
 The routing between the JSON RPC methods and their implementors are handled by
 Router::Simple. For example, if you want to map method "foo" to a "MyApp::JSONRPC::Handler" object instance's "handle_foo" method, you specify something like the following in your router instance:
@@ -49,9 +49,9 @@ Router::Simple. For example, if you want to map method "foo" to a "MyApp::JSONRP
         };
     };
 
-The "+" prefix in the handler classname denotes that it is already a fully qualified classname. Without the prefix, the value of "prefix" in the dispatcher object will be used to qualify the classname. If you specify it in your Dispatcher instance, you may omit the prefix part to save you some typing:
+The "+" prefix in the handler classname denotes that it is already a fully qualified classname. Without the prefix, the value of "prefix" in the dispatch object will be used to qualify the classname. If you specify it in your Dispatch instance, you may omit the prefix part to save you some typing:
 
-    use JSON::RPC::Dispatcher;
+    use JSON::RPC::Dispatch;
     use Router::Simple::Declare;
 
     my $router = router {
@@ -64,7 +64,7 @@ The "+" prefix in the handler classname denotes that it is already a fully quali
             action => "process"
         }
     };
-    my $dispatcher = JSON::RPC::Dispatcher->new(
+    my $dispatch = JSON::RPC::Dispatch->new(
         prefix => "MyApp::JSONRPC::Handler",
         router => $router,
     );
@@ -115,7 +115,7 @@ $procedure is an instance of JSON::RPC::Procedure. Use it if you need to figure 
 
     # app.psgi
     sub {
-        $dispatcher->handle_psgi($env, "arg1", "arg2", "arg3");
+        $dispatch->handle_psgi($env, "arg1", "arg2", "arg3");
     }
 
 will cause your handlers to receive the following arguments:
@@ -139,8 +139,8 @@ For example, if you would like to your webapp's "rpc" handler to marshall the JS
     sub rpc {
         my ($self, $context) = @_;
 
-        my $dispatcher =  ...; # grab it from somewhere
-        $dispatcher->handle_psgi( $context->env );
+        my $dispatch =  ...; # grab it from somewhere
+        $dispatch->handle_psgi( $context->env );
     }
 
 =head1 BACKWARDS COMPATIBILITY
