@@ -36,7 +36,11 @@ JSON::RPC is a set of modules that implment JSON RPC 2.0 protocol.
 
 =head1 BASIC USAGE
 
-The dispatch is responsible for marshalling the request.
+The JSON::RPC::Dispatch object is responsible for marshalling the request.
+
+    my $dispatch = JSON::RPC::Dispatch->new(
+        router => ...,
+    );
 
 The routing between the JSON RPC methods and their implementors are handled by
 Router::Simple. For example, if you want to map method "foo" to a "MyApp::JSONRPC::Handler" object instance's "handle_foo" method, you specify something like the following in your router instance:
@@ -48,6 +52,10 @@ Router::Simple. For example, if you want to map method "foo" to a "MyApp::JSONRP
             action  => "handle_foo"
         };
     };
+
+    my $dispatch = JSON::RPC::Dispatch->new(
+        router => $router,
+    );
 
 The "+" prefix in the handler classname denotes that it is already a fully qualified classname. Without the prefix, the value of "prefix" in the dispatch object will be used to qualify the classname. If you specify it in your Dispatch instance, you may omit the prefix part to save you some typing:
 
