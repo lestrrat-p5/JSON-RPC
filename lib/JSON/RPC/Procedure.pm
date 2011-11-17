@@ -11,3 +11,25 @@ use Class::Accessor::Lite
 ;
 
 1;
+
+__END__
+
+=head1 NAME
+
+JSON::RPC::Procedure - A JSON::RPC Procedure
+
+=head1 SYNOPSIS
+
+    use JSON::RPC::Procedure;
+
+    my $procedure = JSON::RPC::Procedure->new(
+        id => ...,
+        method => ...
+        params => ...
+    );
+
+=head1 DESCRIPTION
+
+A container for JSON RPC procedure information
+
+=cut
