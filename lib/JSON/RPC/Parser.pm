@@ -74,3 +74,24 @@ sub construct_from_get_req {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+JSON::RPC::Parser - Parse JSON RPC Requests from Plack::Request
+
+=head1 SYNOPSIS
+
+    use JSON::RPC::Parser;
+
+    my $parser = JSON::RPC::Parser->new(
+        coder => JSON->new
+    );
+    my $procedure = $parser->construct_from_req( $request );
+
+=head1 DESCRIPTION
+
+Constructs a L<JSON::RPC::Procedure> object from a Plack::Request object
+
+=cut
