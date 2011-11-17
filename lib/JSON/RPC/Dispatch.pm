@@ -32,7 +32,6 @@ sub new {
         $self->{parser} = JSON::RPC::Parser->new( coder => $self->coder )
     }
     if (! $self->{router}) {
-        require Router::Simple;
         $self->{router} = Router::Simple->new;
     }
     return $self;
@@ -220,3 +219,32 @@ no Try::Tiny;
 
 1;
 
+__END__
+
+=head1 NAME
+
+JSON::RPC::Dispatch - Dispatch JSON RPC Requests To Handlers
+
+=head1 SYNOPSIS
+
+    use JSON::RPC::Dispatch;
+
+    my $router = Router::Simple->new; # or use Router::Simple::Declare
+    $router->connect( method_name => {
+        handler => $class_name_or_instance,
+        action  => $method_name_to_invoke
+    );
+
+    my $dispatch = JSON::RPC::Dispatch->new(
+        router => $router
+    );
+
+    sub psgi_app {
+        $dispatch->handle_psgi( $env );
+    }
+
+=head1 DESCRIPTION
+
+See docs in L<JSON::RPC> for details
+
+=cut
