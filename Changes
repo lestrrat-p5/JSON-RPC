@@ -1,6 +1,9 @@
 Changes
 =======
 
+1.00 2011 Nov 22
+    - No code change.
+
 1.00_02  2011 Nov 16
     - JSON::RPC::Dispatcher already existed on CPAN. s/Dispatcher/Dispatch/g
 

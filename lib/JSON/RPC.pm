@@ -1,6 +1,6 @@
 package JSON::RPC;
 use strict;
-our $VERSION = '1.00_02';
+our $VERSION = '1.00';
 
 1;
 
