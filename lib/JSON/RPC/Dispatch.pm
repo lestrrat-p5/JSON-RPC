@@ -3,7 +3,6 @@ use strict;
 use JSON::RPC::Constants qw(:all);
 use JSON::RPC::Parser;
 use JSON::RPC::Procedure;
-use Class::Load ();
 use Router::Simple;
 use Scalar::Util;
 use Try::Tiny;
@@ -49,7 +48,8 @@ sub construct_handler {
 
     my $handler = $self->handlers->{ $klass };
     if (! $handler) {
-        Class::Load::load_class( $klass );
+        eval "require $klass";
+        die if $@;
         $handler = $klass->new();
         $self->handlers->{$klass} = $handler;
     }
