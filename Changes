@@ -1,6 +1,11 @@
 Changes
 =======
 
+1.01 2011 Dec 01
+    - Use require instead of Class::Load. Subclass in your app if you need
+      that kind of ability, but it seems unlikely that we'd need anything
+      more than eval require here.
+
 1.00 2011 Nov 22
     - No code change.
 
