@@ -7,6 +7,7 @@ use JSON;
 BEGIN {
     use_ok "JSON::RPC::Dispatch";
     use_ok "JSON::RPC::Constants", ':all';
+    use_ok "JSON::RPC::Test";
     use_ok "t::JSON::RPC::Test::Handler::Sum";
 }
 
@@ -25,7 +26,7 @@ subtest 'defaults' => sub {
     }
 };
 
-subtest 'normal disptch' => sub {
+subtest 'normal dispatch' => sub {
     my $coder = JSON->new;
     my $router = Router::Simple->new;
     $router->connect( blowup => {
@@ -203,60 +204,50 @@ subtest 'normal disptch' => sub {
 
     };
 
+    # XXX I want to test both Plack::Request and raw env, but test_rpc
+    # makes it kinda hard... oh well, it's not /that/ much of a problem
+    test_rpc $dispatch, sub {
+        my $cb = shift;
+        subtest 'JSONRPC via GET' => sub { $request_get->($cb) };
+        subtest 'JSONRPC via POST' => sub { $request_post->($cb) };
+        subtest 'JSONRPC Error' => sub { 
+            my ($post_content, $req, $res, $json);
+            my $headers = HTTP::Headers->new( Content_Type => 'application/json',);
+            my $uri = URI->new( "http://localhost" );
 
-    for my $raw_env ( 0..0 ) {
-        test_psgi
-            app => sub {
-                my $env = shift;
-                my $req = $raw_env ? $env : Plack::Request->new($env);
-                my $res = $dispatch->handle_psgi( $req );
-                return $res->finalize();
-            },
-            client => sub {
-                my $cb = shift;
-                subtest 'JSONRPC via GET' => sub { $request_get->($cb) };
-                subtest 'JSONRPC via POST' => sub { $request_post->($cb) };
-                subtest 'JSONRPC Error' => sub { 
-                    my ($post_content, $req, $res, $json);
-                    my $headers = HTTP::Headers->new( Content_Type => 'application/json',);
-                    my $uri = URI->new( "http://localhost" );
-
-                    $post_content = $coder->encode( [ method => "hoge"] );
-                    $req = HTTP::Request->new( POST => $uri, $headers, $post_content );
-                    $res = $cb->($req);
-                    $json = $coder->decode( $res->decoded_content );
-                    if (! is $json->{error}->{code}, RPC_INVALID_PARAMS ){
-                        diag explain $json;
-                    }
-
-                    $post_content = "{ [[ broken json }";
-                    $req = HTTP::Request->new( POST => $uri, $headers, $post_content );
-                    $res = $cb->($req);
-                    $json = $coder->decode( $res->decoded_content );
-                    if (! is $json->{error}->{code}, RPC_PARSE_ERROR ) {
-                        diag explain $json;
-                    }
-
-                    $post_content = "[]";
-                    $req = HTTP::Request->new( POST => $uri, $headers, $post_content );
-                    $res = $cb->($req);
-                    $json = $coder->decode( $res->decoded_content );
-                    if (! is $json->{error}->{code}, RPC_INVALID_REQUEST ){
-                        diag explain $json;
-                    }
-
-                    # invalid method 'PUT'
-                    $req = HTTP::Request->new( PUT => $uri );
-                    $res = $cb->($req);
-                    $json = $coder->decode( $res->decoded_content );
-                    if (! is $json->{error}->{code}, RPC_INVALID_REQUEST ){
-                        diag explain $json;
-                    }
-
-                };
+            $post_content = $coder->encode( [ method => "hoge"] );
+            $req = HTTP::Request->new( POST => $uri, $headers, $post_content );
+            $res = $cb->($req);
+            $json = $coder->decode( $res->decoded_content );
+            if (! is $json->{error}->{code}, RPC_INVALID_PARAMS ){
+                diag explain $json;
             }
-        ;
-    }
+
+            $post_content = "{ [[ broken json }";
+            $req = HTTP::Request->new( POST => $uri, $headers, $post_content );
+            $res = $cb->($req);
+            $json = $coder->decode( $res->decoded_content );
+            if (! is $json->{error}->{code}, RPC_PARSE_ERROR ) {
+                diag explain $json;
+            }
+
+            $post_content = "[]";
+            $req = HTTP::Request->new( POST => $uri, $headers, $post_content );
+            $res = $cb->($req);
+            $json = $coder->decode( $res->decoded_content );
+            if (! is $json->{error}->{code}, RPC_INVALID_REQUEST ){
+                diag explain $json;
+            }
+
+            # invalid method 'PUT'
+            $req = HTTP::Request->new( PUT => $uri );
+            $res = $cb->($req);
+            $json = $coder->decode( $res->decoded_content );
+            if (! is $json->{error}->{code}, RPC_INVALID_REQUEST ){
+                diag explain $json;
+            }
+        };
+    };
 };
 
 done_testing;
