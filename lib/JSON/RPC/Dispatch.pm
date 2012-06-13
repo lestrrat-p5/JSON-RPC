@@ -212,7 +212,7 @@ sub handle_psgi {
         $self->coder->encode( @$procedures > 1 ? \@response : $response[0] )
     );
 
-    return $res;
+    return $res->finalize;
 }
 
 no Try::Tiny;
