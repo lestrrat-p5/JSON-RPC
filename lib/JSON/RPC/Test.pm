@@ -11,8 +11,7 @@ sub test_rpc {
     my %args = @_;
     my $dispatch = delete $args{dispatch};
     $args{app} = sub {
-        my $res = $dispatch->handle_psgi(@_);
-        return $res->finalize();
+        $dispatch->handle_psgi(@_);
     };
 
     @_ = %args;
