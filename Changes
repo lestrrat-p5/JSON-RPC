@@ -1,6 +1,9 @@
 Changes
 =======
 
+1.02 2012 Jun 14
+    - Fix the finalization of the response (0xAF)
+
 1.01 2011 Dec 01
     - Use require instead of Class::Load. Subclass in your app if you need
       that kind of ability, but it seems unlikely that we'd need anything
