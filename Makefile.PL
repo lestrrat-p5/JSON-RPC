@@ -1,4 +1,33 @@
-use inc::Module::Install;
+BEGIN {
+    my @modules = qw(
+        inc::Module::Install
+        Module::Install::Repository
+    );
+    foreach my $module (@modules) {
+        eval "require $module; $module->import";
+        if ($@) {
+            push @missing, $module;
+        }
+    }
+    if (@missing) {
+        print STDERR <<EOM;
+Whoa, you probably git cloned this from the repository, and ran 
+"perl Makefile.PL" for the first time.
+Looks like you don't have some development tools to build this module.
+Please first install the following modules:
+
+EOM
+        foreach my $module (@missing) {
+            print STDERR "    $module\n";
+        }
+
+        print <<EOM;
+
+and then re-run "perl Makefile.PL"
+EOM
+        exit 1;
+    }
+}
 
 eval {
     local %INC;
