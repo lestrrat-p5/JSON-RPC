@@ -196,13 +196,17 @@ sub handle_psgi {
             if (JSONRPC_DEBUG) {
                 warn "Error while executing $action: $e";
             }
+            my $error = {code => RPC_INTERNAL_ERROR} ;
+            if (ref $e eq "HASH") {
+               $error->{message} = $e->{message},
+               $error->{data}    = $e->{data},
+            } else {
+               $error->{message} = $e,
+            }
             push @response, {
                 jsonrpc => '2.0',
-                id => $procedure->id,
-                error => {
-                    code => RPC_INTERNAL_ERROR,
-                    message => $e,
-                }
+                id      => $procedure->id,
+                error   => $error,
             };
         };
     }
