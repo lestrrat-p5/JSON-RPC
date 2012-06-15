@@ -37,6 +37,10 @@ subtest 'normal dispatch' => sub {
         handler => 'Sum',
         action => 'sum',
     } );
+    $router->connect( tidy_error => {
+        handler => "Sum",
+        action  => "tidy_error",
+    } );
 
     $router->connect( 'sum_obj' => {
         handler => t::JSON::RPC::Test::Handler::Sum->new,
@@ -246,6 +250,25 @@ subtest 'normal dispatch' => sub {
             if (! is $json->{error}->{code}, RPC_INVALID_REQUEST ){
                 diag explain $json;
             }
+
+
+            my $id = time();
+            $post_content = $coder->encode(
+                {
+                    jsonrpc => '2.0',
+                    id     => $id,
+                    method => 'tidy_error',
+                    params => "foo",
+                }
+            );
+            $req = HTTP::Request->new( POST => $uri, $headers, $post_content);
+            $res = $cb->($req);
+            $json = $coder->decode( $res->decoded_content );
+            if (! is $json->{error}->{code}, RPC_INTERNAL_ERROR) {
+                diag explain $json;
+            }
+            is $json->{error}->{message}, 'short description of the error';
+            is $json->{error}->{data}, 'additional information about the error';
         };
     };
 };
