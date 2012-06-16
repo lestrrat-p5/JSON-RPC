@@ -3,6 +3,8 @@ perl:
   - "5.14"
   - "5.12"
 before_script:
-  - "cpanm -v Module::Install"
-  - "cpanm -v Module::Install::Repository"
+  - "cpanm -l extlib -v Module::Install"
+  - "cpanm -l extlib -v Module::Install::Repository"
+script:
+  - "perl -Ilib=extlib/lib/perl5 Makefile.PL; make test"
 
