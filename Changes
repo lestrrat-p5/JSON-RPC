@@ -1,6 +1,9 @@
 Changes
 =======
 
+1.03 2012 Jun 15
+    - Allow die \%hash from handlers (ka2u)
+
 1.02 2012 Jun 14
     - Fix the finalization of the response (0xAF)
 
