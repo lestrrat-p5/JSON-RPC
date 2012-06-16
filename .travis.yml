@@ -2,9 +2,9 @@ language: perl
 perl:
   - "5.14"
   - "5.12"
-before_script:
-  - "cpanm -l extlib -v Module::Install"
-  - "cpanm -l extlib -v Module::Install::Repository"
-script:
-  - "perl -Ilib=extlib/lib/perl5 Makefile.PL; make test"
+before_install:
+  - "cpanm -v --notest Module::Install"
+  - "cpanm -v --notest Module::Install::Repository"
+install:
+  - "cpanm -v --installdeps --notest ."
 
