@@ -3,6 +3,6 @@ perl:
   - "5.14"
   - "5.12"
 before_script:
-  - cpanm -v Module::Install
-  - cpanm -v Module::Install::Repository
+  - "cpanm -v Module::Install"
+  - "cpanm -v Module::Install::Repository"
 
