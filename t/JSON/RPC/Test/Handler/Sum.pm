@@ -17,4 +17,11 @@ sub sum {
     return $sum;
 }
 
+sub tidy_error {
+    die {
+        message => "short description of the error",
+        data    => "additional information about the error"
+    };
+}
+
 1;
