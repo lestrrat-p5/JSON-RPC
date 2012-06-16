@@ -151,6 +151,47 @@ For example, if you would like to your webapp's "rpc" handler to marshall the JS
         $dispatch->handle_psgi( $context->env );
     }
 
+=head1 ERRORS
+
+When your handler dies, it is automatically included in the response hash.
+
+For example, something like below 
+
+    sub rpc {
+        ...
+        if ($bad_thing_happend) {
+            die "Argh! I failed!";
+        }
+    }
+
+Would result in a response like
+
+    {
+        error => {
+            code => -32603,
+            message => "Argh! I failed! at ...",
+        }
+    }
+
+However, you can include custom data by die()'ing with a hash:
+
+    sub rpc {
+        ...
+        if ($bad_thing_happend) {
+            die { message => "Argh! I failed!", data => time() };
+        }
+    }
+
+This would result in:
+
+    {
+        error => {
+            code => -32603,
+            message => "Argh! I failed! at ...",
+            data => 1339817722,
+        }
+    }
+
 =head1 BACKWARDS COMPATIBILITY
 
 Eh, not compatible at all. JSON RPC 0.xx was fine, but it predates PSGI, and things are just... different before and after PSGI.
