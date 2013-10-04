@@ -28,7 +28,7 @@ JSON::RPC - JSON RPC 2.0 Server Implementation
 
 =head1 DESCRIPTION
 
-JSON::RPC is a set of modules that implment JSON RPC 2.0 protocol.
+JSON::RPC is a set of modules that implement JSON RPC 2.0 protocol.
 
     If you are using old JSON::RPC code (up to 0.96), DO NOT EXPECT
     YOUR CODE TO WORK WITH THIS VERSION. THIS VERSION IS 
@@ -115,7 +115,7 @@ The handler methods will receive the following parameters:
         return $some_structure;
     }
 
-In most cases you will only need the parameters. The exact format of the $params is dependend on the caller -- you will be passed whatever JSON structure that caller used to call your handler.
+In most cases you will only need the parameters. The exact format of the $params is dependent on the caller -- you will be passed whatever JSON structure that caller used to call your handler.
 
 $procedure is an instance of JSON::RPC::Procedure. Use it if you need to figure out more about the procedure.
 
