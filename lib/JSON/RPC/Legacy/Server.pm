@@ -588,7 +588,7 @@ If version is 1.1, returns 1.1. Otherwise returns 0.
 
 =item charset
 
-Setter/Getter to cahrset.
+Setter/Getter to charset.
 Default is 'UTF-8'.
 
 
@@ -601,7 +601,7 @@ Default is 'application/json'.
 =item return_die_message
 
 When your program dies in your procedure,
-sends a return object with errror message 'Procedure error' by default.
+sends a return object with error message 'Procedure error' by default.
 
 If this option is set, uses C<die> message.
 

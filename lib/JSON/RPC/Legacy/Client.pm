@@ -341,7 +341,7 @@ Sets the JSON-RPC protocol version.
 =item id
 
 Sets a request identifier.
-In JSON-RPC 1.1, it is optoinal.
+In JSON-RPC 1.1, it is optional.
 
 If you set C<version> 1.0 and don't set id,
 the module sets 'JSON::RPC::Legacy::Client' to it.
