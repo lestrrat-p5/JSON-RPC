@@ -107,19 +107,13 @@ sub call {
 
     $self->status_line($result->status_line);
 
-    if ($result->is_success) {
+    return unless($result->content); # notification?
 
-        return unless($result->content); # notification?
-
-        if ($service) {
-            return JSON::RPC::Legacy::ServiceObject->new($result, $self->json);
-        }
-
-        return JSON::RPC::Legacy::ReturnObject->new($result, $self->json);
+    if ($service) {
+        return JSON::RPC::Legacy::ServiceObject->new($result, $self->json);
     }
-    else {
-        return;
-    }
+
+    return JSON::RPC::Legacy::ReturnObject->new($result, $self->json);
 }
 
 
