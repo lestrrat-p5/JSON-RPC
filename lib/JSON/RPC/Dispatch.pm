@@ -233,7 +233,6 @@ sub handle_psgi {
     }
 
     return $res->finalize;
-
 }
 
 no Try::Tiny;
