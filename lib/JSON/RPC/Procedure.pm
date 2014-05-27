@@ -7,6 +7,8 @@ use Class::Accessor::Lite
         id
         method
         params
+        has_id
+        jsonrpc
     ) ]
 ;
 

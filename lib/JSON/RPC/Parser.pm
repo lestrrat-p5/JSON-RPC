@@ -48,9 +48,11 @@ sub construct_from_post_req {
     foreach my $req ( @$request ) {
         Carp::croak( "Invalid parameter") unless ref $req eq 'HASH';
         push @procs, $self->construct_procedure(
-            method => $req->{method},
-            id     => $req->{id},
-            params => $req->{params},
+            method  => $req->{method},
+            id      => $req->{id},
+            params  => $req->{params},
+            jsonrpc => $req->{jsonrpc},
+            has_id  => exists $req->{id}, # when not true it's a notification in JSON-RPC 2.0
         );
     }
     return \@procs;
@@ -66,9 +68,11 @@ sub construct_from_get_req {
     }
     return [
         $self->construct_procedure(
-            method => $params->{method},
-            id     => $params->{id},
-            params => $decoded_params
+            method  => $params->{method},
+            id      => $params->{id},
+            params  => $decoded_params,
+            jsonrpc => $params->{jsonrpc},
+            has_id  => exists $params->{id},
         )
     ];
 }
