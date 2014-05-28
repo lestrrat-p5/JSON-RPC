@@ -1,4 +1,5 @@
 use strict;
+use warnings;
 use Test::More;
 use Plack::Test;
 use HTTP::Request;
@@ -269,6 +270,73 @@ subtest 'normal dispatch' => sub {
             }
             is $json->{error}->{message}, 'short description of the error';
             is $json->{error}->{data}, 'additional information about the error';
+        };
+        subtest 'JSONRPC Notification handling' => sub { 
+            my ($post_content, $req, $res, $json);
+            my $headers = HTTP::Headers->new( Content_Type => 'application/json',);
+            my $uri = URI->new( "http://localhost" );
+
+            $post_content = $coder->encode( { method => "hoge", jsonrpc => '2.0' } );
+            $req = HTTP::Request->new( POST => $uri, $headers, $post_content );
+            $res = $cb->($req);
+            if (! ok $res->is_success, "Notification with nonexistent method: response is success") {
+                diag $res->as_string;
+            }
+            if (! is $res->code, 204, "Notification with nonexistent method: code is 204 for no content") {
+                diag $res->as_string;
+            }
+            if (! ok !length($res->content), "Notification with nonexistent method: content has no length") {
+                diag $res->as_string;
+            }
+
+            $post_content = $coder->encode( [
+                {
+                    jsonrpc => '2.0',
+                    method => 'blowup',
+                    params => "fuga",
+                },
+                {
+                    jsonrpc => '2.0',
+                    id     => undef,
+                    method => 'blowup',
+                    params => "fuga",
+                },
+            ] );
+            $req = HTTP::Request->new( POST => $uri, $headers, $post_content );
+            $res = $cb->($req);
+            if (! ok $res->is_success, "Notification and a NULL id call: response is success") {
+                diag $res->as_string;
+            }
+
+            $json = $coder->decode( $res->decoded_content );
+            is scalar @$json, 1, "Notification and a NULL id call: response has one element";
+            ok (exists $json->[0]->{id} && !defined $json->[0]->{id}, "Notification and a NULL id call: response element has NULL id");
+            ok ($json->[0]->{error}, "Notification and a NULL id call: response element has an error");
+            
+            $post_content = $coder->encode( [
+                {
+                    jsonrpc => '2.0',
+                    method => 'blowup',
+                    params => "fuga",
+                },
+                {
+                    jsonrpc => '2.0',
+                    method => 'blowup',
+                    params => "fuga2",
+                },
+            ] );
+            $req = HTTP::Request->new( POST => $uri, $headers, $post_content );
+            $res = $cb->($req);
+            if (! ok $res->is_success, "Notification batch: response is success") {
+                diag $res->as_string;
+            }
+
+            if (! is $res->code, 204, "Notification batch: code is 204 for no content") {
+                diag $res->as_string;
+            }
+            if (! ok !length($res->content), "Notification batch: content has no length") {
+                diag $res->as_string;
+            }
         };
     };
 };
