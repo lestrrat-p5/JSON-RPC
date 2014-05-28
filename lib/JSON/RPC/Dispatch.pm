@@ -150,7 +150,7 @@ sub handle_psgi {
             if (JSONRPC_DEBUG) {
                 warn $message;
             }
-            unless ($is_notification) { # must not respond to a valid JSON-RPC notification
+            if (!$is_notification) { # must not respond to a valid JSON-RPC notification
                 push @response, {
                     error => {
                         code => RPC_METHOD_NOT_FOUND,
@@ -190,7 +190,7 @@ sub handle_psgi {
             }
 
             # respond unless we are sure a procedure is a notification
-            unless ($is_notification) {
+            if (!$is_notification) {
                 push @response, {
                     jsonrpc => '2.0',
                     result  => $result,
@@ -203,7 +203,7 @@ sub handle_psgi {
                 warn "Error while executing $action: $e";
             }
             # can't respond to notifications even in case of errors
-            unless ($is_notification) {
+            if (!$is_notification) {
                 my $error = {code => RPC_INTERNAL_ERROR} ;
                 if (ref $e eq "HASH") {
                    $error->{message} = $e->{message},
