@@ -7,7 +7,7 @@ use JSON::RPC::Legacy::Server; # for old Perl 5.005
 
 use base qw(JSON::RPC::Legacy::Server);
 
-$JSON::RPC::Legacy::Server::CGI::VERSION = '0.92';
+$JSON::RPC::Legacy::Server::CGI::VERSION = '1.04';
 
 sub new {
     my $class = shift;

@@ -5,7 +5,7 @@ use strict;
 use JSON::RPC::Legacy::Server; # for old Perl 5.005
 use base qw(JSON::RPC::Legacy::Server);
 
-$JSON::RPC::Legacy::Server::Daemon::VERSION = '0.03';
+$JSON::RPC::Legacy::Server::Daemon::VERSION = '1.04';
 
 use Data::Dumper;
 

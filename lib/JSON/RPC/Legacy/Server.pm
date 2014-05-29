@@ -25,7 +25,7 @@ BEGIN {
 }
 
 
-$JSON::RPC::Legacy::Server::VERSION = '0.92';
+$JSON::RPC::Legacy::Server::VERSION = '1.04';
 
 
 BEGIN {
