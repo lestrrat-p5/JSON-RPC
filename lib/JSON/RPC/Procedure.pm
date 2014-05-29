@@ -7,6 +7,8 @@ use Class::Accessor::Lite
         id
         method
         params
+        has_id
+        jsonrpc
     ) ]
 ;
 
@@ -26,6 +28,8 @@ JSON::RPC::Procedure - A JSON::RPC Procedure
         id => ...,
         method => ...
         params => ...
+        jsonrpc => ...
+        has_id => ... (a flag that signals that a procedure appears to be a notification when not set)
     );
 
 =head1 DESCRIPTION

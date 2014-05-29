@@ -79,8 +79,6 @@ The "+" prefix in the handler classname denotes that it is already a fully quali
     #    my $handler = MyApp::JSONRPC::Handler::Bar->new;
     #    $handler->process( ... );
 
-
-
 The implementors are called handlers. Handlers are simple objects, and will be instantiated automatically for you. Their return values are converted to JSON objects automatically.
 
 You may also choose to pass objects in the handler argument to connect in  your router. This will save you the cost of instantiating the handler object, and you also don't have to rely on us instantiating your handler object.
@@ -146,7 +144,7 @@ For example, if you would like to your webapp's "rpc" handler to marshall the JS
 
 # ERRORS
 
-When your handler dies, it is automatically included in the response hash.
+When your handler dies, it is automatically included in the response hash, unless no response was requested (see ["NOTIFICATIONS"](#notifications)).
 
 For example, something like below 
 
@@ -184,6 +182,30 @@ This would result in:
             data => 1339817722,
         }
     }
+
+# NOTIFICATIONS
+
+Notifications are defined as procedures without an id.
+Notification handling does not produce a response. When all procedures are notifications no content is returned (if the request is valid).
+To maintain some basic compatibility with relaxed client implementations, JSON::RPC::Dispatch includes responses when procedures do not have a "jsonrpc" field set to "2.0".
+
+Note that no error is returned in response to a notification when the handler dies or when the requested method is not available.
+
+For example, a request structure like this:
+
+    [
+        {"jsonrpc": "2.0", "method": "sum", "params": [1,2,4], "id": "1"},
+        {"jsonrpc": "2.0", "method": "notify_hello", "params": [7]},
+        {"jsonrpc": "2.0", "method": "keep_alive"},
+        {"jsonrpc": "2.0", "method": "get_data", "id": "9"}
+    ]
+
+Would result in a response like
+
+    [
+        {"jsonrpc": "2.0", "result": 7, "id": "1"},
+        {"jsonrpc": "2.0", "result": ["hello", 5], "id": "9"}
+    ]
 
 # BACKWARDS COMPATIBILITY
 

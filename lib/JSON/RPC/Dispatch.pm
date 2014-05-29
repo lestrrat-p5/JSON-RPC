@@ -143,18 +143,21 @@ sub handle_psgi {
             next;
         }
 
+        my $is_notification = defined $procedure->jsonrpc && $procedure->jsonrpc eq '2.0' && !$procedure->has_id;
         my $matched = $router->match( $procedure->{method} );
         if (! $matched) {
             my $message = "Procedure '$procedure->{method}' not found";
             if (JSONRPC_DEBUG) {
                 warn $message;
             }
-            push @response, {
-                error => {
-                    code => RPC_METHOD_NOT_FOUND,
-                    message => $message,
-                }
-            };
+            if (!$is_notification) { # must not respond to a valid JSON-RPC notification
+                push @response, {
+                    error => {
+                        code => RPC_METHOD_NOT_FOUND,
+                        message => $message,
+                    }
+                };
+            }
             next;
         }
 
@@ -186,35 +189,48 @@ sub handle_psgi {
                     . " IP=$ip UA=$ua";
             }
 
-            push @response, {
-                jsonrpc => '2.0',
-                result  => $result,
-                id      => $procedure->id,
-            };
+            # respond unless we are sure a procedure is a notification
+            if (!$is_notification) {
+                push @response, {
+                    jsonrpc => '2.0',
+                    result  => $result,
+                    id      => $procedure->id,
+                };
+            }
         } catch {
             my $e = $_;
             if (JSONRPC_DEBUG) {
                 warn "Error while executing $action: $e";
             }
-            my $error = {code => RPC_INTERNAL_ERROR} ;
-            if (ref $e eq "HASH") {
-               $error->{message} = $e->{message},
-               $error->{data}    = $e->{data},
-            } else {
-               $error->{message} = $e,
+            # can't respond to notifications even in case of errors
+            if (!$is_notification) {
+                my $error = {code => RPC_INTERNAL_ERROR} ;
+                if (ref $e eq "HASH") {
+                   $error->{message} = $e->{message},
+                   $error->{data}    = $e->{data},
+                } else {
+                   $error->{message} = $e,
+                }
+                push @response, {
+                    jsonrpc => '2.0',
+                    id      => $procedure->id,
+                    error   => $error,
+                };
             }
-            push @response, {
-                jsonrpc => '2.0',
-                id      => $procedure->id,
-                error   => $error,
-            };
         };
     }
-    my $res = $req->new_response(200);
-    $res->content_type( 'application/json; charset=utf8' );
-    $res->body(
-        $self->coder->encode( @$procedures > 1 ? \@response : $response[0] )
-    );
+
+    my $res;
+    if (scalar @response) {
+        $res = $req->new_response(200);
+        $res->content_type( 'application/json; charset=utf8' );
+        $res->body(
+            $self->coder->encode( @$procedures > 1 ? \@response : $response[0] )
+        );
+        return $res->finalize;
+    } else { # no content
+        $res = $req->new_response(204);
+    }
 
     return $res->finalize;
 }
