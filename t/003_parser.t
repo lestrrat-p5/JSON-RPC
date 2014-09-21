@@ -15,10 +15,7 @@ subtest 'basic' => sub {
         coder => JSON->new,
     );
 
-    my $procedures = $parser->construct_from_req( $req );
-    ok $procedures, "procedures is defined";
-    is @$procedures, 1, "should be 1 procedure";
-    my $procedure = $procedures->[0];
+    my $procedure = $parser->construct_from_req( $req );
     ok $procedure, "procedure is defined";
     isa_ok $procedure, "JSON::RPC::Procedure";
     is $procedure->id, 1, "id matches";
@@ -40,8 +37,7 @@ subtest 'basic' => sub {
         CONTENT_LENGTH => $cl,
         CONTENT_TYPE   => 'application/json'
     } );
-    $procedures = $parser->construct_from_req( $req );
-    $procedure = $procedures->[0];
+    $procedure = $parser->construct_from_req( $req );
     is $procedure->jsonrpc, "2.0", "jsonrpc matches";
     ok $procedure->has_id, "has id";
     close $input;
@@ -56,8 +52,7 @@ subtest 'basic' => sub {
         CONTENT_LENGTH => $cl,
         CONTENT_TYPE   => 'application/json'
     } );
-    $procedures = $parser->construct_from_req( $req );
-    $procedure = $procedures->[0];
+    $procedure = $parser->construct_from_req( $req );
     ok !$procedure->has_id, "does not have an id";
     close $input;
 
@@ -82,7 +77,7 @@ subtest 'basic' => sub {
         CONTENT_LENGTH => $cl,
         CONTENT_TYPE   => 'application/json'
     } );
-    $procedures = $parser->construct_from_req( $req );
+    my $procedures = $parser->construct_from_req( $req );
     ok $procedures, "procedures are defined";
     is @$procedures, 2, "should be 2 procedures";
     ok (($procedures->[0]->has_id && $procedures->[1]->has_id), "both procedures have ids");
