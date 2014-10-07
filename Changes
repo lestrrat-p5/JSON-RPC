@@ -3,6 +3,9 @@ Changes
 
 {{$NEXT}}
 
+1.06 2014-10-07T01:58:56Z
+    - Messed up previous release. Re-releasing
+
 1.05 2014-10-07T01:57:38Z
     - Work better with batch requests: Now responses are properly returned
       as list as long as the request is a list as well (Arata Makoto)
