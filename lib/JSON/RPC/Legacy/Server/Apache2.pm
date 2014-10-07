@@ -14,7 +14,7 @@ use Apache2::RequestIO ();
 use Apache2::RequestUtil ();
 
 
-$JSON::RPC::Legacy::Server::Apache::VERSION = '1.04';
+$JSON::RPC::Legacy::Server::Apache::VERSION = '1.05';
 
 
 sub handler {

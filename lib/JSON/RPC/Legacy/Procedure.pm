@@ -4,7 +4,7 @@ package JSON::RPC::Legacy::Procedure;
 # http://json-rpc.org/wd/JSON-RPC-1-1-WD-20060807.html
 #
 
-$JSON::RPC::Legacy::Procedure::VERSION = '1.04';
+$JSON::RPC::Legacy::Procedure::VERSION = '1.05';
 
 use strict;
 use attributes;
