@@ -71,7 +71,7 @@ sub construct_from_get_req {
     my $params = $req->query_parameters;
     my $decoded_params;
     if ($params->{params}) {
-        $decoded_params = eval { $self->coder->decode( $params->{params} ) };
+        $decoded_params = eval { $self->coder->allow_nonref->decode( $params->{params} ) };
     }
     return $self->construct_procedure(
         method  => $params->{method},
