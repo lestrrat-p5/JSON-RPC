@@ -22,6 +22,16 @@ subtest 'basic' => sub {
     is $procedure->method, "sum", "method matches";
     is_deeply $procedure->params, [ 1, 2, 3 ], "parameters match";
 
+    # params is a top-level JSON in GET requests, it should accept strings and other nonreferences
+    $req = Plack::Request->new( {
+        QUERY_STRING   => 'method=echo&params=%22ping%2012345%22&id=1',
+        REQUEST_METHOD => "GET",
+    } );
+
+    $procedure = $parser->construct_from_req( $req );
+    ok $procedure, "procedure is defined";
+    is_deeply $procedure->params, "ping 12345", "parameters match";
+
     my $request_hash = {
         "method" => "sum",
         "params" => [1, 2, 3],
