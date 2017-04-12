@@ -29,8 +29,7 @@ subtest 'basic' => sub {
     } );
 
     $procedure = $parser->construct_from_req( $req );
-    ok $procedure, "procedure is defined";
-    is_deeply $procedure->params, "ping 12345", "parameters match";
+    is_deeply $procedure->params, "ping 12345", "string parameters match";
 
     my $request_hash = {
         "method" => "sum",
