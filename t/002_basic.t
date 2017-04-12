@@ -209,12 +209,41 @@ subtest 'normal dispatch' => sub {
 
     };
 
+    my $request_post_batch = sub {
+        my $cb = shift;
+
+        my ($req, $res, $post_content, $json);
+
+        my $headers = HTTP::Headers->new( Content_Type => 'application/json',);
+        my $uri = URI->new( "http://localhost" );
+        $post_content = $coder->encode(
+            [
+                {
+                    jsonrpc => '2.0',
+                    id     => 1,
+                    method => 'sum',
+                    params => [(1..3)],
+                }
+            ],
+        );
+        $req = HTTP::Request->new( POST => $uri, $headers, $post_content );
+        $res = $cb->( $req );
+
+        if (! ok $res->is_success, "response is success") {
+            diag $res->as_string;
+        }
+
+        $json = $coder->decode( $res->decoded_content );
+        is ref $json, 'ARRAY', 'response is array-ref';
+    };
+
     # XXX I want to test both Plack::Request and raw env, but test_rpc
     # makes it kinda hard... oh well, it's not /that/ much of a problem
     test_rpc $dispatch, sub {
         my $cb = shift;
         subtest 'JSONRPC via GET' => sub { $request_get->($cb) };
         subtest 'JSONRPC via POST' => sub { $request_post->($cb) };
+        subtest 'JSONRPC via POST (Batch)' => sub { $request_post_batch->($cb) };
         subtest 'JSONRPC Error' => sub { 
             my ($post_content, $req, $res, $json);
             my $headers = HTTP::Headers->new( Content_Type => 'application/json',);

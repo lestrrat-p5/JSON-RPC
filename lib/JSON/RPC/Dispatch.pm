@@ -86,11 +86,18 @@ sub handle_psgi {
         $req = Plack::Request->new($req);
     }
 
+    my $is_batch = 0;
     my @response;
     my $procedures;
     try {
         $procedures = $self->parser->construct_from_req( $req );
-        if (@$procedures <= 0) {
+        if (ref $procedures eq 'ARRAY') {
+            $is_batch = 1;
+        } else {
+            $procedures = [$procedures];
+        }
+        if (@$procedures <= 0 || not defined $procedures->[0]) {
+            $is_batch = 0;
             push @response, {
                 error => {
                     code => RPC_INVALID_REQUEST,
@@ -225,7 +232,7 @@ sub handle_psgi {
         $res = $req->new_response(200);
         $res->content_type( 'application/json; charset=utf8' );
         $res->body(
-            $self->coder->encode( @$procedures > 1 ? \@response : $response[0] )
+            $self->coder->encode( ($is_batch) ? \@response : $response[0] )
         );
         return $res->finalize;
     } else { # no content

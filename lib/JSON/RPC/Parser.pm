@@ -41,7 +41,14 @@ sub construct_from_post_req {
 
     my $ref = ref $request;
     if ($ref ne 'ARRAY') {
-        $request = [ $request ];
+        # is not a batch request
+        return $self->construct_procedure(
+            method  => $request->{method},
+            id      => $request->{id},
+            params  => $request->{params},
+            jsonrpc => $request->{jsonrpc},
+            has_id  => exists $request->{id},
+        );
     }
 
     my @procs;
@@ -66,15 +73,13 @@ sub construct_from_get_req {
     if ($params->{params}) {
         $decoded_params = eval { $self->coder->decode( $params->{params} ) };
     }
-    return [
-        $self->construct_procedure(
-            method  => $params->{method},
-            id      => $params->{id},
-            params  => $decoded_params,
-            jsonrpc => $params->{jsonrpc},
-            has_id  => exists $params->{id},
-        )
-    ];
+    return $self->construct_procedure(
+        method  => $params->{method},
+        id      => $params->{id},
+        params  => $decoded_params,
+        jsonrpc => $params->{jsonrpc},
+        has_id  => exists $params->{id},
+    );
 }
 
 1;
