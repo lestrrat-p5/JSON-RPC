@@ -24,8 +24,8 @@ sub new {
         @args,
     }, $class;
     if (! $self->{coder}) {
-        require JSON;
-        $self->{coder} = JSON->new->utf8;
+        require JSON::MaybeXS;
+        $self->{coder} = JSON::MaybeXS::JSON()->new->utf8;
     }
     if (! $self->{parser}) {
         $self->{parser} = JSON::RPC::Parser->new( coder => $self->coder )

@@ -1,7 +1,7 @@
 use strict;
 use Test::More;
 use Plack::Request;
-use JSON;
+use JSON::MaybeXS 'to_json', 'JSON';
 
 use_ok "JSON::RPC::Parser";
 use_ok "JSON::RPC::Procedure";
@@ -12,7 +12,7 @@ subtest 'basic' => sub {
         REQUEST_METHOD => "GET",
     } );
     my $parser = JSON::RPC::Parser->new(
-        coder => JSON->new,
+        coder => JSON()->new,
     );
 
     my $procedure = $parser->construct_from_req( $req );

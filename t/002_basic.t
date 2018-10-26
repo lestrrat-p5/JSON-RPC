@@ -3,7 +3,7 @@ use warnings;
 use Test::More;
 use Plack::Test;
 use HTTP::Request;
-use JSON;
+use JSON::MaybeXS;
 
 BEGIN {
     use_ok "JSON::RPC::Dispatch";
@@ -15,7 +15,8 @@ BEGIN {
 subtest 'defaults' => sub {
     my $dispatch = JSON::RPC::Dispatch->new();
     if (ok $dispatch->coder) {
-        isa_ok $dispatch->coder, 'JSON';
+        my $json_backend = JSON::MaybeXS::JSON();
+        isa_ok $dispatch->coder, $json_backend;
     }
 
     if (ok $dispatch->router) {
@@ -28,7 +29,7 @@ subtest 'defaults' => sub {
 };
 
 subtest 'normal dispatch' => sub {
-    my $coder = JSON->new;
+    my $coder = JSON()->new;
     my $router = Router::Simple->new;
     $router->connect( blowup => {
         handler => "Sum",
