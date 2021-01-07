@@ -125,6 +125,7 @@ sub handle_psgi {
                 }
             };
         } else {
+            chomp $e;
             push @response, {
                 error => {
                     code => RPC_INVALID_REQUEST,
