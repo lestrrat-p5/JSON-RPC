@@ -4,7 +4,7 @@
 ##############################################################################
 
 use strict;
-use JSON ();
+use JSON::MaybeXS 'JSON';
 use Carp ();
 
 ##############################################################################
@@ -62,7 +62,7 @@ sub AUTOLOAD {
 
 
 sub create_json_coder {
-    JSON->new->allow_nonref->utf8;
+    JSON()->new->allow_nonref->utf8;
 }
 
 
@@ -349,9 +349,9 @@ Setter/getter to L<LWP::UserAgent> object.
 =item json
 
 Setter/getter to the JSON coder object.
-Default is L<JSON>, likes this:
+The default is the backend returned by L<JSON::MaybeXS>, created like this:
 
-   $self->json( JSON->new->allow_nonref->utf8 );
+   $self->json( JSON()->new->allow_nonref->utf8 );
    
    $json = $self->json;
 

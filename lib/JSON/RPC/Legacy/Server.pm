@@ -4,7 +4,6 @@
 ##############################################################################
 
 use strict;
-use JSON ();
 use Carp ();
 
 use HTTP::Request ();
@@ -14,6 +13,7 @@ use HTTP::Response ();
 ##############################################################################
 
 package JSON::RPC::Legacy::Server;
+use JSON::MaybeXS 'JSON';
 
 my $JSONRPC_Procedure_Able;
 
@@ -43,7 +43,7 @@ BEGIN {
 
 
 sub create_json_coder {
-    JSON->new->utf8; # assumes UTF8
+    JSON()->new->utf8; # assumes UTF8
 }
 
 
@@ -569,9 +569,9 @@ An error code number in your procedure is an integer between 501 and 899.
 =item json
 
 Setter/Getter to json encoder/decoder object.
-The default value is L<JSON> object in the below way:
+The default value is a JSON serializer object as returned by L<JSON::MaybeXS> in the following manner:
 
- JSON->new->utf8
+ JSON()->new->utf8
 
 In your procedure, changes its behaviour.
 

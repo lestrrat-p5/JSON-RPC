@@ -52,14 +52,14 @@
       },
       "runtime" : {
          "recommends" : {
-            "JSON::XS" : "0"
+            "Cpanel::JSON::XS" : "0"
          },
          "requires" : {
             "CGI" : "0",
             "Class::Accessor::Lite" : "0",
             "HTTP::Request" : "0",
             "HTTP::Response" : "0",
-            "JSON" : "0",
+            "JSON::MaybeXS" : "0",
             "LWP::UserAgent" : "0",
             "Plack" : "0",
             "Router::Simple" : "0",

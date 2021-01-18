@@ -8,7 +8,8 @@ my $server = JSON::RPC::Legacy::Server->new;
 
 isa_ok($server, 'JSON::RPC::Legacy::Server');
 
-isa_ok($server->json, 'JSON');
+my $json_backend = JSON::MaybeXS::JSON();
+isa_ok($server->json, $json_backend);
 
 my $test = JSON::RPC::Legacy::Server::Test->new;
 
