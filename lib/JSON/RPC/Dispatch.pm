@@ -214,8 +214,9 @@ sub handle_psgi {
             if (!$is_notification) {
                 my $error = {code => RPC_INTERNAL_ERROR} ;
                 if (ref $e eq "HASH") {
-                   $error->{message} = $e->{message},
-                   $error->{data}    = $e->{data},
+                   $error->{message} = $e->{message};
+                   $error->{data}    = $e->{data} unless !defined $e->{data};
+                   $error->{code}    = $e->{code} unless !defined $e->{code};
                 } else {
                    $error->{message} = $e,
                 }
