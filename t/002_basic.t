@@ -9,7 +9,7 @@ BEGIN {
     use_ok "JSON::RPC::Dispatch";
     use_ok "JSON::RPC::Constants", ':all';
     use_ok "JSON::RPC::Test";
-    use_ok "t::JSON::RPC::Test::Handler::Sum";
+    use_ok "t::JSON::RPC::Test::Handler::Sum", qw( CUSTOM_ERROR_CODE );
 }
 
 subtest 'defaults' => sub {
@@ -41,6 +41,10 @@ subtest 'normal dispatch' => sub {
     $router->connect( tidy_error => {
         handler => "Sum",
         action  => "tidy_error",
+    } );
+    $router->connect( custom_error => {
+        handler => "Sum",
+        action  => "custom_error",
     } );
 
     $router->connect( 'sum_obj' => {
@@ -244,7 +248,7 @@ subtest 'normal dispatch' => sub {
         subtest 'JSONRPC via GET' => sub { $request_get->($cb) };
         subtest 'JSONRPC via POST' => sub { $request_post->($cb) };
         subtest 'JSONRPC via POST (Batch)' => sub { $request_post_batch->($cb) };
-        subtest 'JSONRPC Error' => sub { 
+        subtest 'JSONRPC Error' => sub {
             my ($post_content, $req, $res, $json);
             my $headers = HTTP::Headers->new( Content_Type => 'application/json',);
             my $uri = URI->new( "http://localhost" );
@@ -299,8 +303,26 @@ subtest 'normal dispatch' => sub {
             }
             is $json->{error}->{message}, 'short description of the error';
             is $json->{error}->{data}, 'additional information about the error';
+
+            $id = time();
+            $post_content = $coder->encode(
+                {
+                    jsonrpc => '2.0',
+                    id     => $id,
+                    method => 'custom_error',
+                    params => "foo",
+                }
+            );
+            $req = HTTP::Request->new( POST => $uri, $headers, $post_content);
+            $res = $cb->($req);
+            $json = $coder->decode( $res->decoded_content );
+            if (! is $json->{error}->{code}, CUSTOM_ERROR_CODE, "error code is CUSTOM_ERROR_CODE") {
+                diag explain $json;
+            }
+            is $json->{error}->{message}, 'short description of the error', "error message matches";
+            is_deeply $json->{error}->{data}, { some => 'data' }, "error data matches";
         };
-        subtest 'JSONRPC Notification handling' => sub { 
+        subtest 'JSONRPC Notification handling' => sub {
             my ($post_content, $req, $res, $json);
             my $headers = HTTP::Headers->new( Content_Type => 'application/json',);
             my $uri = URI->new( "http://localhost" );
@@ -341,7 +363,7 @@ subtest 'normal dispatch' => sub {
             is scalar @$json, 1, "Notification and a NULL id call: response has one element";
             ok (exists $json->[0]->{id} && !defined $json->[0]->{id}, "Notification and a NULL id call: response element has NULL id");
             ok ($json->[0]->{error}, "Notification and a NULL id call: response element has an error");
-            
+
             $post_content = $coder->encode( [
                 {
                     jsonrpc => '2.0',
